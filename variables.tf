@@ -2,7 +2,7 @@ variable "key" {
   default = "devops-a162f31edb27.json"
 }
 variable "project" {
-  default = "devops-235312"
+  default = "probproject"
 }
 variable "region" {
   default = "us-central1"

@@ -7,4 +7,6 @@ output "public_ip_db" {
 }
 output "public_ip_nat" {
    value = ["${google_compute_address.address.*.address}"]
+
 }
+
