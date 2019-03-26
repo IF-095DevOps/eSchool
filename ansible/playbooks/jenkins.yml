@@ -1,5 +1,9 @@
+- name: Wait until the file Jenkins sectets is present before continuing
+  wait_for:
+    path: /var/lib/jenkins/secrets/initialAdminPassword    
+
 - name: read admin pwd
-  shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+  command: cat /var/lib/jenkins/secrets/initialAdminPassword
   register: adminpwd
 
 - name: unlock and add admin user
@@ -9,14 +13,15 @@
     import hudson.security.*
     def instance = Jenkins.getInstance()
     def hudsonRealm = new HudsonPrivateSecurityRealm(false)
-    hudsonRealm.createAccount('jenkins', '${user_pwd}')
+    hudsonRealm.createAccount('${user_name}', '${user_pwd}')
     instance.setSecurityRealm(hudsonRealm)
     def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
     strategy.setAllowAnonymousRead(false)
     instance.setAuthorizationStrategy(strategy)
     instance.save()
    args:
-    user_pwd: "admin55"
+    user_name: "{{jenkins_user}}"
+    user_pwd: "{{jenkins_pass}}" 
    user: admin
    password: "{{ adminpwd.stdout }}"
 
@@ -31,62 +36,62 @@
    user: admin
    password: "{{ adminpwd.stdout }}"
 
- #- name: install plugin
- # jenkins_plugin:
- #  name:
- #    - dashboard-view
- #    - cloudbees-folder
- #    - antisamy-markup-formatter
- #    - build-name-setter
- #    - build-timeout
- #    - config-file-provider
- #    - credentials-binding
- #    - embeddable-build-status
- #    - rebuild ssh-agent
- #    - throttle-concurrents
- #    - timestamper
- #    - ws-cleanup
- #    - ant gradle
- #    - msbuild
- #    - nodejs
- #    - checkstyle
- #    - cobertura
- #    - htmlpublisher
- #    - junit warnings
- #    - xunit
- #    - workflow-aggregator
- #    - github-organization-folder
- #    - pipeline-stage-view
- #    - build-pipeline-plugin
- #    - conditional-buildstep
- #    - jenkins-multijob-plugin
- #    - parameterized-trigger
- #    - copyartifact
- #    - bitbucket
- #    - clearcase
- #    - cvs
- #    - git
- #    - git-parameter
- #    - github
- #    - gitlab-plugin
- #    - p4
- #    - repo
- #    - subversion
- #    - teamconcert
- #    - tfs
- #    - matrix-project
- #    - ssh-slaves
- #    - windows-slaves
- #    - matrix-auth
- #    - pam-auth
- #    - ldap
- #    - role-strategy
- #    - active-directory
- #    - email-ext
- #    - emailext-template
- #    - mailer
- #    - publish-over-ssh
- #    - ssh
- #  state: latest
- #  url_username: admin
- #  url_password: "{{ adminpwd.stdout }}"
+#- name: install plugin
+#  jenkins_plugin:
+#   name:
+#    - dashboard-view
+#     - cloudbees-folder
+#     - antisamy-markup-formatter
+#     - build-name-setter
+#     - build-timeout
+#     - config-file-provider
+#     - credentials-binding
+#     - embeddable-build-status
+#     - rebuild ssh-agent
+#     - throttle-concurrents
+#     - timestamper
+#     - ws-cleanup
+#     - ant gradle
+#     - msbuild
+#     - nodejs
+#     - checkstyle
+#     - cobertura
+#     - htmlpublisher
+#     - junit warnings
+#     - xunit
+#     - workflow-aggregator
+#     - github-organization-folder
+#     - pipeline-stage-view
+#     - build-pipeline-plugin
+#     - conditional-buildstep
+#     - jenkins-multijob-plugin
+#     - parameterized-trigger
+#     - copyartifact
+#     - bitbucket
+#     - clearcase
+#     - cvs
+#     - git
+#     - git-parameter
+#     - github
+#     - gitlab-plugin
+#     - p4
+#     - repo
+#     - subversion
+#     - teamconcert
+#     - tfs
+#     - matrix-project
+#     - ssh-slaves
+#     - windows-slaves
+#     - matrix-auth
+#     - pam-auth
+#     - ldap
+#     - role-strategy
+#     - active-directory
+#     - email-ext
+#     - emailext-template
+#     - mailer
+#     - publish-over-ssh
+#     - ssh
+#   state: latest
+#   url_username: admin
+#   url_password: "{{ adminpwd.stdout }}"
