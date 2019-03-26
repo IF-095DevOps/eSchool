@@ -1,7 +1,10 @@
 ### Terraform ###
 # General
+cred/
 .terraform
 .ssh/
 *.json
+*.tf
 terraform.tfstate.backup
 terraform.tfstate
+\.idea/

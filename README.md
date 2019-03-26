@@ -1,0 +1,1 @@
+sudo ansible-playbook /tmp/ansible/playbooks/main.yml
