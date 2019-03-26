@@ -48,9 +48,9 @@ resource "google_compute_instance" "bastion" {
     access_config = {
       }
   }
-   metadata {
+  metadata {
     sshKeys = "centos:${file("${var.public_key_path}")}"
-   }
+  }
   #  provisioner "file" {
   #   source = "f:/SSHkey/devops095_ossh.pem"
   #   destination = "/home/centos/.ssh/"

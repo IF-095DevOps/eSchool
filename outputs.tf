@@ -8,3 +8,7 @@ output "public_ip_db" {
 output "public_ip_nat" {
    value = ["${google_compute_address.address.*.address}"]
 }
+
+output "frontend_buckets" {
+   value = ["${google_storage_bucket.frontend.*.name}"]
+}

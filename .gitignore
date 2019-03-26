@@ -1,5 +1,6 @@
 ### Terraform ###
 # General
+.credentials
 .terraform
 .ssh/
 *.json

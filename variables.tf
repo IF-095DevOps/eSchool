@@ -1,8 +1,8 @@
 variable "key" {
-  default = "devops-a162f31edb27.json"
+  default = ".credentials/devops-eSchool-fc685d2a3c32.json"
 }
 variable "project" {
-  default = "devops-235312"
+  default = "devops-eschool-235723"
 }
 variable "region" {
   default = "us-central1"
@@ -20,8 +20,9 @@ variable "instance_name" {
     default = "web"
 }
 variable "count" {
-    default = "2"
+  default = "2"
 }
+
 
 
 //VPC vars
@@ -100,4 +101,13 @@ variable user_host {
 variable user_password {
   description = "The password for the default user. If not set, a random one will be generated and available in the generated_user_password output variable."
   default     = "devops095eSchool"
+}
+
+
+// Frontend vars
+variable "frontend_count" {
+  default = "2"
+}
+variable "frontend_name" {
+  default = "front"
 }
