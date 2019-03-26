@@ -1,0 +1,19 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - include: /tmp/ansible/playbooks/all.yml
+
+- hosts: ci
+  become: true
+  vars_files: /tmp/ansible/playbooks/vars.yml
+  tasks:
+    - include: /tmp/ansible/playbooks/ci.yml
+    - include: /tmp/ansible/playbooks/jenkins.yml
+
+- hosts: web
+  become: true
+  vars_files: /tmp/ansible/playbooks/vars.yml
+  tasks:
+    - include: /tmp/ansible/playbooks/web.yml
+...
