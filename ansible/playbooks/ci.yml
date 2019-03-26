@@ -3,9 +3,13 @@
   package:
     name:
       - java-1.8.0-openjdk
-      - git
     state: latest
- 
+
+- name: install the latest version of Apache Maven
+  yum:
+    name: maven
+    state: latest
+
 - name: Download jenkins repo
   get_url:
     url: "{{ jenkins_download_url }}"
@@ -20,9 +24,6 @@
   package:
     name: jenkins
     state: latest
-
-- name: Allow port 8080
-  shell: iptables -I INPUT -p tcp --dport 8080 -m state --state NEW,ESTABLISHED -j ACCEPT
  
 - name: Start the server
   service:
