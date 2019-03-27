@@ -6,3 +6,5 @@
     jenkins_repo_path: /etc/yum.repos.d/jenkins.repo
     maven_download_url: https://www-us.apache.org/dist/maven/maven-3/3.6.0/binaries/apache-maven-3.6.0-bin.tar.gz
     maven_name: "{{download_folder}}/apache-maven-3.6.0"
+    amazon_corretto_jdk_url: https://d1f2yzg3dx5xke.cloudfront.net/java-1.8.0-amazon-corretto-devel-1.8.0_202.b08-1.amzn2.x86_64.rpm
+    amazon_corretto_jre_url: https://d1f2yzg3dx5xke.cloudfront.net/java-1.8.0-amazon-corretto-1.8.0_202.b08-1.amzn2.x86_64.rpm

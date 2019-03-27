@@ -7,10 +7,12 @@
   register: adminpwd
 
 - name: Wait untils Jenkins web is available
-  shell: curl --head --silent http://localhost:8080/login
+  uri:
+    url: "http://localhost:8080/login"
+    status_code: 200
   register: result
-  until: result.stdout.find("200 OK") != -1
-  retries: 12
+  until: result.status == 200
+  retries: 15
   delay: 5
 
 - name: unlock and add admin user
