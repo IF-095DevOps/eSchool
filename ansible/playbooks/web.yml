@@ -1,6 +1,26 @@
 ---
-- name: Install Java
-  package:
-    name:
-      - java-1.8.0-openjdk
-    state: latest  
+- name: Download Amazon Corretto 8 JRE
+  get_url:
+    url: "{{ amazon_corretto_jre_url }}"
+    dest: /tmp/*.rpm
+    mode: 0440
+
+- name: Download Amazon Corretto 8 JDK
+  get_url:
+    url: "{{ amazon_corretto_jdk_url }}"
+    dest: /tmp/*.rpm
+    mode: 0440
+
+- name: Make list with rpm's 
+  find:
+    paths: /tmp/
+    patterns: "*.rpm"
+  register: rpm_files
+
+- set_fact:
+    rpm_list: "{{ rpm_files.files | map(attribute='path') | list}}"
+
+- name: Amazon Corretto 8 JRE/JDK using rpm_list
+  yum:
+    name: "{{rpm_list}}"
+    state: present
