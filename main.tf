@@ -32,6 +32,7 @@ SCRIPT
 }
 
 resource "google_compute_instance" "bastion" {
+  count = 1
   name         = "bastion"
   machine_type = "${var.machine_type}"
   tags = ["ssh"]
@@ -66,6 +67,7 @@ SCRIPT
 }
 
 resource "null_resource" remoteExecProvisionerWFolder {
+  count = 1
   connection {
     host = "${google_compute_instance.bastion.*.network_interface.0.access_config.0.nat_ip}"
     type = "ssh"
@@ -87,17 +89,18 @@ resource "null_resource" remoteExecProvisionerWFolder {
   }
 
   provisioner "remote-exec" {
-    inline = [ "sudo chmod 400 /home/centos/.ssh/id_rsa" ]
+    inline = [ "sudo chmod 600 /home/centos/.ssh/id_rsa" ]
   }
 
   provisioner "file" {
-    source = "${data.template_file.inv.rendered}"
-    destination = "/tmp/prob.txt"
+    content = "${data.template_file.jenkins_conf.rendered}"
+    destination = "/tmp/ansible/files/jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin.xml"
   }
-
 }
 
+
 resource "null_resource" inventoryFileWeb {
+  depends_on = ["null_resource.remoteExecProvisionerWFolder"]
   count = "${var.count}"
   connection {
     host = "${google_compute_instance.bastion.*.network_interface.0.access_config.0.nat_ip}"
@@ -106,8 +109,25 @@ resource "null_resource" inventoryFileWeb {
     private_key = "${file("${var.private_key_path}")}"
     agent = "false"
   }
+
   provisioner "remote-exec" {
-    inline = ["echo ${var.instance_name}-${count.index}\tansible_ssh_host=${element(google_compute_instance.web.*.network_interface.0.network_ip, count.index)}\tansible_user=centos\tansible_ssh_private_key_file=/home/centos/.ssh/id_rsa>>/tmp/prob"]
+    inline = ["echo ${var.instance_name}-${count.index}\tansible_ssh_host=${element(google_compute_instance.web.*.network_interface.0.network_ip, count.index)}\tansible_user=centos\tansible_ssh_private_key_file=/home/centos/.ssh/id_rsa>>/tmp/ansible/hosts.txt"]
   }
 
+}
+
+resource "null_resource" "ansibleProvision" {
+  depends_on = ["null_resource.remoteExecProvisionerWFolder", "null_resource.inventoryFileWeb"]
+  count = 0
+  connection {
+    host = "${google_compute_instance.bastion.*.network_interface.0.access_config.0.nat_ip}"
+    type = "ssh"
+    user = "centos"
+    private_key = "${file("${var.private_key_path}")}"
+    agent = "false"
+  }
+
+  provisioner "remote-exec" {
+    inline = ["ansible-playbook /tmp/ansible/main.yml"]
+  }
 }
