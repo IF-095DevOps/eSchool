@@ -11,7 +11,7 @@
     dest: /tmp/*.rpm
     mode: 0440
 
-- name: Make list with rpm's 
+- name: Make list with downloaded rpm's 
   find:
     paths: /tmp/
     patterns: "*.rpm"
@@ -24,3 +24,4 @@
   yum:
     name: "{{rpm_list}}"
     state: present
+...
