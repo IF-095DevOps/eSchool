@@ -35,3 +35,4 @@
 - wait_for:
     path: "{{ jenkins_home_dir }}/plugins/{{ plugin_name }}"
   tags: [jenkins]
+...
