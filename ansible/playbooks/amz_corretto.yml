@@ -2,13 +2,13 @@
 - name: Download Amazon Corretto 8 JRE
   get_url:
     url: "{{ amazon_corretto_jre_url }}"
-    dest: /tmp/*.rpm
+    dest: /tmp/
     mode: 0440
 
 - name: Download Amazon Corretto 8 JDK
   get_url:
     url: "{{ amazon_corretto_jdk_url }}"
-    dest: /tmp/*.rpm
+    dest: /tmp/
     mode: 0440
 
 - name: Make list with downloaded rpm's 
@@ -24,4 +24,12 @@
   yum:
     name: "{{rpm_list}}"
     state: present
+
+
+- name: Clean Downloaded files
+  file:
+    path: "{{item}}"
+    state: absent
+  with_fileglob:
+    - /tmp/*.rpm
 ...

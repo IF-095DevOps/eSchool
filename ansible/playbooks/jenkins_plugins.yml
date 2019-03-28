@@ -32,7 +32,8 @@
   register: plugins_result
   tags: [jenkins]
 
-- wait_for:
+- name: Wait for plugin install become availble
+  wait_for:
     path: "{{ jenkins_home_dir }}/plugins/{{ plugin_name }}"
   tags: [jenkins]
 ...
