@@ -8,6 +8,7 @@
   become: true
   vars_files: /tmp/ansible/playbooks/vars.yml
   tasks:
+    - include: /tmp/ansible/playbooks/amz_corretto.yml
     - include: /tmp/ansible/playbooks/ci.yml
     - include: /tmp/ansible/playbooks/jenkins.yml
 
@@ -15,5 +16,5 @@
   become: true
   vars_files: /tmp/ansible/playbooks/vars.yml
   tasks:
-    - include: /tmp/ansible/playbooks/web.yml
+    - include: /tmp/ansible/playbooks/amz_corretto.yml
 ...
