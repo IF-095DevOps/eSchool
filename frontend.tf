@@ -9,4 +9,16 @@ resource "google_storage_bucket" "frontend" {
 
 }
 
+resource "google_compute_target_pool" "default" {
+  project          = "${var.project}"
+  name             = "lbfrontend"
+  instances = ["${google_compute_instance.${var.frontend_name}.*.self_link}"]
+
+  region           = "${var.region}"
+  session_affinity = "NONE"
+
+  health_checks = [
+    "${google_compute_http_health_check.default.name}",
+  ]
+}
 
