@@ -8,7 +8,7 @@ data "null_data_source" "auth_mysql_allowed_1" {
 }
 
 resource "google_sql_database_instance" "instance" {
-    name               = "${var.project}-db-instance130"
+    name               = "${var.project}-db-instance200"
     region             = "${var.region}"
     database_version   = "${var.database_version}"
 

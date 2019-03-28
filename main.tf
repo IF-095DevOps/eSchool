@@ -3,7 +3,7 @@ resource "google_compute_instance" "web" {
   name         = "${var.instance_name}-${count.index}"
   machine_type = "${var.machine_type}"
   tags = ["ssh","web"]
-
+  zone = "${element(var.azs, count.index)}"
   
 
   boot_disk {
