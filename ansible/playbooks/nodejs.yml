@@ -1,0 +1,52 @@
+---
+vars:
+  project_path: /var/www/nodejs
+
+- name: Set some variable
+  set_fact:
+    release_path: "{{ project_path }}/releases/{{ lookup('pipe','date +%Y%m%d%H%M%S') }}"
+    current_path: "{{ project_path }}/current"
+- name: Retrieve current release folder
+  command: readlink -f current
+  register: current_release_path
+  ignore_errors: yes
+  args:
+    chdir: "{{ project_path }}"
+- name: Create new folder
+  file:
+    dest={{ release_path }}
+    mode=0755
+    recurse=yes
+    state=directory
+- name: Clone the repository
+  git:
+    repo: https://github.com/IF-092-UI/final_project.git
+    dest: "{{ release_path }}"
+- name: Update npm
+  npm:
+    path={{ release_path }}
+- name: Update symlink
+  file:
+    src={{ release_path }}
+    dest={{ current_path }}
+    state=link
+
+- name: Install yarn
+  npm:
+    name: yarn
+    global: yes
+- name: Use yarn in repo path
+  command: yarn install
+- name: Update Angular CLI
+  npm:
+    name: @angular/cli
+    global: yes
+    state: latest
+- name: Run dev server
+  command: ng serve
+- name: Build project for production
+  command: ng build --prod
+
+- name: Delete old dir
+  shell: rm -rf {{ current_release_path.stdout }}/
+  when: current_release_path.stdout != current_path

@@ -1,0 +1,30 @@
+---
+- name: Install Apache Maven
+  package:
+    name: maven
+    state: latest
+
+- name: Download and Extract Maven 3.6.0 into /temp
+  unarchive:
+    src: "{{ maven_download_url }}"
+    dest: "{{ download_folder }}"
+    remote_src: yes
+
+- name: Create symbolic link for Maven
+  file:
+    src: "{{ maven_path }}"
+    dest: "/opt/maven"
+    state: link
+
+- name: Configure Maven and its environment variables
+  lineinfile:
+      dest: "{{maven_env_file}}"
+      line: "{{ item.line }}"
+      create: yes
+      state: present
+  with_items: 
+    - { line: 'JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto.x86_64/jre' }
+    - { line: 'M2_HOME=/opt/maven' }
+    - { line: 'MAVEN_HOME=/opt/maven' }
+    - { line: 'PATH=$PATH:$M2_HOME/bin' }
+...

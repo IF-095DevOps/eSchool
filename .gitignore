@@ -1,0 +1,9 @@
+### Terraform ###
+# General
+.credentials
+.terraform
+.ssh/
+*.json
+terraform.tfstate.backup
+terraform.tfstate
+.idea
