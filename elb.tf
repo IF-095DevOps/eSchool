@@ -14,9 +14,7 @@ resource "google_compute_target_pool" "default" {
   region           = "${var.region}"
   session_affinity = "NONE"
 
-  health_checks = [
-    "${google_compute_http_health_check.default.name}",
-  ]
+  health_checks = ["${google_compute_http_health_check.default.name}",]
 }
 
 resource "google_compute_http_health_check" "default" {

@@ -1,4 +1,4 @@
-resource "google_storage_bucket" "frontend" {
+/*resource "google_storage_bucket" "frontend" {
   count         = "${var.frontend_count}"
   name          = "${var.frontend_name}-${count.index}"
 
@@ -21,7 +21,7 @@ resource "google_compute_target_pool" "default" {
     "${google_compute_http_health_check.default.name}",
   ]
 }
-
+*/
 
 resource "google_compute_global_forwarding_rule" "default" {
   name       = "default-rule"
@@ -37,37 +37,32 @@ resource "google_compute_target_http_proxy" "default" {
 resource "google_compute_url_map" "urlmap" {
   name        = "lbfrontend"
   description = "a description"
-
-  
   default_service = "${google_compute_backend_bucket.static.self_link}"
-   host_rule {
-     hosts        = ["bucket1"]
-      path_matcher = "allpaths"
-    }
- host_rule {
-     hosts        = ["bucket"]
-      path_matcher = "allpaths1"
-    }
+  host_rule {
+    hosts        = ["bucket1"]
+    path_matcher = "allpaths"
+  }
+  host_rule {
+    hosts        = ["bucket"]
+    path_matcher = "allpaths1"
+  }
   path_matcher {
     name            = "allpaths"
-    
     default_service = "${google_compute_backend_bucket.static.self_link}"
-   
-   path_rule {
+
+    path_rule {
       paths   = ["/index.html"]
       service = "${google_compute_backend_bucket.static.self_link}"
     }
   }
   path_matcher {
     name            = "allpaths1"
-    
     default_service = "${google_compute_backend_bucket.static1.self_link}"
-   
-   path_rule {
+
+    path_rule {
       paths   = ["/index.html"]
       service = "${google_compute_backend_bucket.static1.self_link}"
     }
-    
   }
 }
 resource "google_compute_http_health_check" "default1" {
