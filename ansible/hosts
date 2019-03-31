@@ -1,9 +1,9 @@
 [all]
 localhost ansible_connection=local
-web-0 ansible_ssh_host=10.0.12.4 ansible_user=centos ansible_ssh_private_key_file=/home/centos/.ssh/id_rsa
-web-1 ansible_ssh_host=10.0.12.3 ansible_user=centos ansible_ssh_private_key_file=/home/centos/.ssh/id_rsa
+web-0  ansible_user=centos ansible_ssh_private_key_file=/home/centos/.ssh/id_rsa
+web-1  ansible_user=centos ansible_ssh_private_key_file=/home/centos/.ssh/id_rsa
 [web]
-web-0 ansible_ssh_host=10.0.12.4 ansible_user=centos ansible_ssh_private_key_file=/home/centos/.ssh/id_rsa
-web-1 ansible_ssh_host=10.0.12.3 ansible_user=centos ansible_ssh_private_key_file=/home/centos/.ssh/id_rsa
+web-0  ansible_user=centos ansible_ssh_private_key_file=/home/centos/.ssh/id_rsa
+web-1  ansible_user=centos ansible_ssh_private_key_file=/home/centos/.ssh/id_rsa
 [ci]
 localhost ansible_connection=local
