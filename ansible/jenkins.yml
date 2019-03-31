@@ -74,7 +74,7 @@
    password: "{{ adminpwd.stdout }}"
 
 - name: Install plugins
-  include: /tmp/ansible/playbooks/jenkins_plugins.yml
+  include: /tmp/ansible/jenkins_plugins.yml
   with_items:
       - sonar  
       - disk-usage

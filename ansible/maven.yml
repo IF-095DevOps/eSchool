@@ -10,6 +10,11 @@
     dest: "{{ download_folder }}"
     remote_src: yes
 
+- name: Remove old path configuration
+  file:
+    path: "{{ maven_env_file }}"
+    state: absent
+
 - name: Create symbolic link for Maven
   file:
     src: "{{ maven_path }}"
@@ -18,13 +23,16 @@
 
 - name: Configure Maven and its environment variables
   lineinfile:
-      dest: "{{maven_env_file}}"
+      dest: "{{ maven_env_file }}"
       line: "{{ item.line }}"
       create: yes
       state: present
   with_items: 
-    - { line: 'JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto.x86_64/jre' }
-    - { line: 'M2_HOME=/opt/maven' }
-    - { line: 'MAVEN_HOME=/opt/maven' }
-    - { line: 'PATH=$PATH:$M2_HOME/bin' }
+    - { line: 'export JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto.x86_64/jre' }
+    - { line: 'export M2_HOME=/opt/maven' }
+    - { line: 'export MAVEN_HOME=/opt/maven' }
+    - { line: 'export PATH=${M2_HOME}/bin:${PATH}' }
+
+- name: Exports/Run maven env file for make M2_HOME available globally
+  shell: source {{ maven_env_file }}
 ...
