@@ -1,11 +1,8 @@
 ---
-vars:
-  project_path: /var/www/nodejs
-
 - name: Set some variable
   set_fact:
-    release_path: "{{ project_path }}/releases/{{ lookup('pipe','date +%Y%m%d%H%M%S') }}"
-    current_path: "{{ project_path }}/current"
+    release_path: "{{ front_project_path }}/releases/{{ lookup('pipe','date +%Y%m%d%H%M%S') }}"
+    current_path: "{{ front_project_path }}/current"
 - name: Retrieve current release folder
   command: readlink -f current
   register: current_release_path
@@ -22,6 +19,11 @@ vars:
   git:
     repo: https://github.com/IF-092-UI/final_project.git
     dest: "{{ release_path }}"
+- name: Edit backend host IP
+  replace:
+    path: "{{ release_path }}/src/app/services/token-interceptor.service.ts"
+    regexp: 'fierce-shore-32592.herokuapp.com'
+    replace: "{{ backend_host_ip }}"
 - name: Update npm
   npm:
     path={{ release_path }}

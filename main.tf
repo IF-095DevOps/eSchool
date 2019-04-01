@@ -82,7 +82,10 @@ resource "null_resource" remoteExecProvisionerWFolder {
     source = "ansible"
     destination = "/tmp/ansible"
   }
-
+/* ADD var of backend LB IP */
+  provisioner "remote-exec" {
+    inline = [ "sudo sed -i -e 's/backend_host_ip:/backend_host_ip: ${google_compute_address.address.*.address}' tmp/ansible/playbooks/vars.yml" ]
+  }
   provisioner "file" {
     source = "${var.private_key_path}"
     destination = "/home/centos/.ssh/id_rsa"
@@ -113,7 +116,6 @@ resource "null_resource" inventoryFileWeb {
   provisioner "remote-exec" {
     inline = ["echo ${var.instance_name}-${count.index}\tansible_ssh_host=${element(google_compute_instance.web.*.network_interface.0.network_ip, count.index)}\tansible_user=centos\tansible_ssh_private_key_file=/home/centos/.ssh/id_rsa>>/tmp/ansible/hosts.txt"]
   }
-
 }
 
 resource "null_resource" "ansibleProvision" {

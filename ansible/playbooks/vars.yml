@@ -11,3 +11,5 @@
     maven_env_file: /etc/profile.d/maven.sh
     amazon_corretto_jdk_url: https://d1f2yzg3dx5xke.cloudfront.net/java-1.8.0-amazon-corretto-devel-1.8.0_202.b08-1.amzn2.x86_64.rpm
     amazon_corretto_jre_url: https://d1f2yzg3dx5xke.cloudfront.net/java-1.8.0-amazon-corretto-1.8.0_202.b08-1.amzn2.x86_64.rpm
+    front_project_path: "{{download_follder}}/eSchool-front"
+    backend_host_ip:
