@@ -7,4 +7,4 @@ cred/
 *.tf
 terraform.tfstate.backup
 terraform.tfstate
-\.idea/
+.idea/
