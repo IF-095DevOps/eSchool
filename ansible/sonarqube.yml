@@ -1,0 +1,10 @@
+---
+- name: Unarchive a sonarqube-7.7.zip that needs to be downloaded
+  unarchive:
+    src: "{{ sonarqube_url }}"
+    dest: /opt/sonarqube
+    remote_src: yes
+
+
+
+
