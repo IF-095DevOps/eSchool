@@ -19,9 +19,6 @@ resource "google_compute_instance" "web" {
  
   metadata_startup_script = <<SCRIPT
 sudo yum -y update
-sudo yum -y install httpd
-sudo systemctl start httpd
-sudo rpm -ivh https://d2znqt9b1bc64u.cloudfront.net/java-1.8.0-amazon-corretto-devel-1.8.0_202.b08-2.x86_64.rpm
 
 SCRIPT
 
@@ -31,10 +28,9 @@ SCRIPT
 
 }
 
-resource "google_compute_instance" "bastion" {
-  count = 1
-  name         = "bastion"
-  machine_type = "${var.machine_type}"
+resource "google_compute_instance" "jenkins" {
+  name         = "jenkins"
+  machine_type = "n1-standard-1"
   tags = ["ssh"]
   
 
@@ -51,18 +47,12 @@ resource "google_compute_instance" "bastion" {
   }
   metadata {
     sshKeys = "centos:${file("${var.public_key_path}")}"
-  }
-  #  provisioner "file" {
-  #   source = "f:/SSHkey/devops095_ossh.pem"
-  #   destination = "/home/centos/.ssh/"
-  #   }
+   }
 
    metadata_startup_script = <<SCRIPT
-yum -y update
-yum -y install epel-release
-yum -y install ansible
-yum install -y mc nano wget git
-
+sudo yum -y update
+sudo yum -y install epel-release
+sudo yum -y install ansible
 SCRIPT
 }
 

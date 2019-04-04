@@ -3,7 +3,7 @@ resource "google_compute_forwarding_rule" "default" {
   name                  = "lbb"
   target                = "${google_compute_target_pool.default.self_link}"
   load_balancing_scheme = "EXTERNAL"
-  port_range            = "80"
+  port_range            = "8080"
 }
 
 resource "google_compute_target_pool" "default" {
@@ -21,5 +21,5 @@ resource "google_compute_http_health_check" "default" {
   project      = "${var.project}"
   name         = "hg-hc"
   request_path = "/"
-  port         = "80"
+  port         = "8080"
 }

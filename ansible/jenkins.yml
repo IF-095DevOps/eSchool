@@ -74,7 +74,7 @@
    password: "{{ adminpwd.stdout }}"
 
 - name: Install plugins
-  include: /tmp/ansible/playbooks/jenkins_plugins.yml
+  include: /tmp/ansible/jenkins_plugins.yml
   with_items:
       - sonar  
       - disk-usage
@@ -127,8 +127,40 @@
       - emailext-template
       - mailer
       - publish-over-ssh
-      - ssh
+    #   - ssh
   loop_control:
     loop_var: plugin_name
   tags: [jenkins]
+
+- name: Copy some part 1 of jenkins config
+  copy:
+    src: ./files/jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin.xml
+    dest: /var/lib/jenkins
+    owner: jenkins
+    group: jenkins
+    mode: 0644
+
+- name: Copy some part 1 of jenkins config
+  template:
+    src: ./templates/hudson.plugins.git.GitTool.xml.j2
+    dest: /var/lib/jenkins/hudson.plugins.git.GitTool.xml
+
+- name: Create job_backend from xml-file
+  jenkins_job:
+    config: "{{ lookup('file', 'files/job_backend.xml') }}"
+    name: job_backend
+    password: "{{ adminpwd.stdout }}" 
+    url: http://localhost:8080
+    user: "admin"
+
+- name: Restart jenkins
+  shell: "java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080/ -auth admin:{{ adminpwd.stdout }} safe-restart"
+
+- name: Wait for jenkins to start
+  wait_for: timeout=100
+  delegate_to: localhost
+
+- name: Build job_backend
+  shell: "java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080/ -auth admin:{{ adminpwd.stdout }} build job_backend"
+
 ...

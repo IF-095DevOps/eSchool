@@ -1,0 +1,17 @@
+---
+- hosts: localhost
+  become: true
+  vars_files: /tmp/ansible/vars.yml
+  tasks:
+    - import_tasks: /tmp/ansible/update_packages.yml
+    - import_tasks: /tmp/ansible/amz_coretto.yml
+    - import_tasks: /tmp/ansible/maven.yml
+    - import_tasks: /tmp/ansible/jenkins.yml
+
+- hosts: web
+  become: true
+  vars_files: /tmp/ansible/vars.yml
+  tasks:
+    - import_tasks: /tmp/ansible/update_packages.yml
+    - import_tasks: /tmp/ansible/amz_coretto.yml
+...

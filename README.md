@@ -1,1 +1,1 @@
-sudo ansible-playbook /tmp/ansible/playbooks/main.yml
+sudo ansible-playbook /tmp/ansible/main.yml
