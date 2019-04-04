@@ -1,6 +1,8 @@
 resource "google_compute_instance" "web" {
   count        = "${var.count}"
-  name         = "${var.instance_name}-${count.index}"
+  tags {
+    Name = "${var.instance_name}-${count.index}"
+  }
   machine_type = "${var.machine_type}"
   tags = ["ssh","web"]
 
