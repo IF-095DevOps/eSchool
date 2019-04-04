@@ -1,0 +1,8 @@
+mariadb_root_password: 'mypassword'
+MAINDB: sonar
+USERDB: sonar
+PASSWDDB: Sonar@1234
+  
+  
+
+
