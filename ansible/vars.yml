@@ -17,3 +17,7 @@ PASSWDDB: '123456'
 MAINDB: 'sonarbase'
 nodesource_remote: https://rpm.nodesource.com/setup_8.x
 nodesource_local: /tmp/ansible/files/node.sh
+sonarqube_url: https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-7.7.zip
+sonar_username: sonar
+sonar_password: Sonar@1234
+sonar_url: jdbc:mysql://localhost:3306/sonar?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=$

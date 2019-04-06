@@ -1,0 +1,41 @@
+---
+- name: Download and unarchive a sonarqube
+  unarchive:
+    src: "{{ sonarqube_url }}"
+    dest: /opt/sonarqube
+    remote_src: yes
+
+- name: change user and password value
+  ini_file: {{ item.name }}
+  with_items: 
+    - name: dest=/opt/sonarqube/conf/sonar.properties section=DEFAULT option=sonar.jdbc.username value=${sonar_username} backup=yes
+    - name: dest=/opt/sonarqube/conf/sonar.properties section=DEFAULT option=sonar.jdbc.password value=${sonar_password} backup=yes
+    - name: dest=/opt/sonarqube/conf/sonar.properties section=DEFAULT option=sonar.jdbc.url value=${sonar_url} backup=yes
+  tags: configuration
+
+- name: Symlink sonar bin.
+  file:
+    src: /usr/local/sonar/bin/linux-x86-64/sonar.sh
+    dest: /usr/bin/sonar
+    state: link
+  register: sonar_symlink
+
+- name: Add sonar as init script for service management.
+  file:
+    src: /usr/local/sonar/bin/linux-x86-64/sonar.sh
+    dest: /etc/init.d/sonar
+    state: link
+  when: "ansible_service_mgr != 'systemd'"
+
+- name: Ensure Sonar is running and set to start on boot.
+  service: name=sonar state=started enabled=yes
+
+- name: Allow Sonar time to build on first start.
+  pause: seconds=180
+  when: sonar_symlink.changed
+  tags: ['skip_ansible_lint']
+
+- name: Make sure Sonar is responding on the configured port.
+  wait_for: port=9000 delay=3 timeout=300
+
+
