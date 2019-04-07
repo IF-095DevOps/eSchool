@@ -127,7 +127,7 @@
       - emailext-template
       - mailer
       - publish-over-ssh
-    #   - ssh
+    
   loop_control:
     loop_var: plugin_name
   tags: [jenkins]
@@ -153,14 +153,50 @@
     url: http://localhost:8080
     user: "admin"
 
+- name: Download NodeSource repository
+  get_url:
+    url: "{{ nodesource_remote }}"
+    dest: "{{ nodesource_local }}"
+
+- name: Add NodeSource repository
+  command: sh "{{ nodesource_local }}"
+
+- name: Install Node.js
+  package:
+    name: nodejs
+    state: latest
+
+- name: Install Node.js packages globally.
+  npm:
+    name: "{{ item }}"
+    global: yes
+  with_items:
+     - yarn
+     - '@angular/cli'
+
+- name: Create job_frontend from xml-file
+  jenkins_job:
+    config: "{{ lookup('file', 'files/job_frontend.xml') }}"
+    name: job_frontend
+    password: "{{ adminpwd.stdout }}" 
+    url: http://localhost:8080
+    user: "admin"
+
 - name: Restart jenkins
   shell: "java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080/ -auth admin:{{ adminpwd.stdout }} safe-restart"
 
-- name: Wait for jenkins to start
-  wait_for: timeout=100
-  delegate_to: localhost
+- name: Wait untils Jenkins web will be available
+  uri:
+    url: "http://{{ jenkins_local }}/login"
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 25
+  delay: 5
 
 - name: Build job_backend
   shell: "java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080/ -auth admin:{{ adminpwd.stdout }} build job_backend"
 
+- name: Build job_frontend
+  shell: "java -jar /var/cache/jenkins/war/WEB-INF/jenkins-cli.jar -s http://localhost:8080/ -auth admin:{{ adminpwd.stdout }} build job_frontend"
 ...

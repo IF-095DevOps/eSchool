@@ -13,7 +13,7 @@ resource "null_resource" remoteExecProvisionerWFolder {
      destination = "/home/centos/.ssh/id_rsa"
      }
   provisioner "remote-exec" {
-  inline = [ "sudo chmod 600 /home/centos/.ssh/id_rsa" ]
+    inline = [ "sudo chmod 600 /home/centos/.ssh/id_rsa" ]
   }
   provisioner "remote-exec" {
     inline = [ "rm -rf /tmp/ansible" ]
@@ -30,6 +30,10 @@ resource "null_resource" remoteExecProvisionerWFolder {
    provisioner "file" {
     content = "${data.template_file.app_conf.rendered}"
     destination = "/tmp/ansible/files/application.properties"
+  }
+   provisioner "file" {
+    content = "${data.template_file.job_frontend.rendered}"
+    destination = "/tmp/ansible/files/job_frontend.xml"
   }
 
 }

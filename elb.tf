@@ -17,9 +17,12 @@ resource "google_compute_target_pool" "default" {
   health_checks = ["${google_compute_http_health_check.default.name}",]
 }
 
-resource "google_compute_http_health_check" "default" {
-  project      = "${var.project}"
-  name         = "hg-hc"
-  request_path = "/"
-  port         = "8080"
+resource "google_compute_health_check" "default" {
+  name               = "health-check"
+  timeout_sec        = 1
+  check_interval_sec = 1
+
+  tcp_health_check {
+    port = "8080"
+  }
 }

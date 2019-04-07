@@ -16,3 +16,9 @@ data "template_file" "app_conf" {
     db_pass = "${var.user_password}"
   }
 }
+data "template_file" "job_frontend" {
+template = "${file("${path.module}/templates/job_frontend.tpl")}"
+vars {
+lb_backend = "${google_compute_forwarding_rule.default.ip_address}"
+}
+}
