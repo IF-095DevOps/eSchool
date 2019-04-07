@@ -1,120 +1,100 @@
 ---
-- name: Add official MariaDB repository
-  yum_repository:
-    name: MariaDB
-    description: Official MariaDB repository
-    baseurl: "http://yum.mariadb.org/10.4.3/centos7-amd64/"
-    gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-    gpgcheck: true
-  tags: mariadb
+- name: PostgreSQL Repo
+  package:
+    name: https://download.postgresql.org/pub/repos/yum/11/redhat/rhel-7-x86_64/pgdg-redhat11-11-2.noarch.rpm
+    state: present
 
-- name: install MariaDB packages
-  yum: pkg={{ item.name }} state=present
+- name: install PostgreSQL packages
+  yum: pkg={{ item }} state=present
   with_items:
-    - name: MariaDB
-    - name: MariaDB-server
-    - name: MySQL-python
-  tags: mariadb
+    - postgresql11-server
+    - postgresql11-contrib
+    - python-psycopg2
+  tags: postgresq
 
-- name: Start service mariadb, if not started
+# - name: "Stage 2: stop old postgresql service"
+#   service: name="postgresql-{{ postgresql_version }}" state=stopped
+#   when: postgresql_drop_old_cluster
+
+# - name: "Stage 2: remove old postgresql cluster"
+#   command: "rm -rf /var/lib/pgsql/{{ postgresql_version }}/data {{ postgresql_cluster_symlink_src }}"
+#   when: postgresql_drop_old_cluster
+
+# - name: "Stage 2: cluster directory replacement with symlink, check destination directory"
+#   file:
+#     path: "{{ postgresql_cluster_symlink_src }}"
+#     state: directory
+#     owner: "{{ sonar_pqsql_username }}"
+#     group: "{{ sonar_pqsql_username }}"
+#     mode: 0700
+#   when: postgresql_cluster_symlink_src|length > 0
+  
+# - name: "Stage 2: cluster directory replacement with symlink, create symlink"
+#   file:
+#     src: "{{ postgresql_cluster_symlink_src }}"
+#     dest: "/var/lib/pgsql/{{ postgresql_version }}/data"
+#     state: link
+#     owner: "{{ sonar_pqsql_username }}"
+#     group: "{{ sonar_pqsql_username }}"
+#   when: postgresql_cluster_symlink_src|length > 0
+
+# - name: "Stage 2: initialize new postgresql cluster"
+#   sudo_user: "{{ sonar_pqsql_username }}"
+#   command: "/usr/pgsql-{{ postgresql_version }}/bin/initdb -D /var/lib/pgsql/{{ postgresql_version }}/data"
+
+
+- name: Initiate database
+  command: /usr/pgsql-11/bin/postgresql-11-setup initdb
+
+- name: Start service PostgreSQL
   service:
-    name: mariadb       
+    name: postgresql-11       
     state: started
     enabled: yes
 
-- name: insert line in file
+- name: Create PostgreSQL User
+  postgresql_user:
+    name: "{{ sonar_pqsql_username }}"
+    encrypted: no
+    password: "{{ sonar_pqsql_password }}"
+    role_attr_flags: LOGIN,SUPERUSER
+#  when: postgresql_users|length > 0
+
+- name: Create PostgreSQL DB
+  postgresql_db:
+    name: acme
+    encoding: UTF-8
+    lc_collate: en_US.UTF-8
+    lc_ctype: en_US.UTF-8
+    template: template0
+
+- name: Create PostgreSQL DB
+  postgresql_privs:
+    db: "{{ sonar_pqsql_database }}"
+    privs: ALL
+    type: database
+    role: "{{ sonar_pqsql_username }}"
+
+- name: PostgreSQL Translation port and Listening Addresses
   lineinfile:
-    path: /etc/my.cnf.d/server.cnf
-    insertafter: '\[mysqld\]'
-    line: "{{ item }}"
-  loop:
-    - character_set_server = 'utf8mb4'
-    - innodb_file_per_table = 'ON'
-    - innodb_file_format = Barracuda
-    - innodb_file_per_table = 1
-    - collation-server = utf8mb4_unicode_ci
-    - skip-character-set-client-handshake
-- name: restart mariadb
-  service: name=mariadb state=restarted
-
-- name: Replace my.cnf config
-  replace:
-    path: /etc/my.cnf.d/server.cnf
-    regexp: '#bind-address=0.0.0.0'
-    replace: 'bind-address=0.0.0.0'
-
-- name: restart mariadb
-  service: name=mariadb state=restarted
-
-- name: Check if root password is set
-  shell: >
-    mysqladmin -u root status
-  changed_when: false
-  failed_when: false
-  register: root_pwd_check
-  tags: mariadb
-
-- name: Set MariaDB root password for the first time (root@localhost)
-  mysql_user:
-    name: root
-    password: "{{ mariadb_root_password }}"
-    host: localhost
-    state: present
-  when: root_pwd_check.rc == 0
-  tags: mariadb
-
-- name: Set MariaDB root password for 127.0.0.1, ::1
-  mysql_user:
-    name: root
-    password: "{{ mariadb_root_password }}"
-    host: "{{ item }}"
-    login_user: root
-    login_password: "{{ mariadb_root_password }}"
-    state: present
+    dest: /var/lib/pgsql/11/data/postgresql.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
   with_items:
-    - ::1
-    - 127.0.0.1
-  when: root_pwd_check.rc == 0
-  tags: mariadb
+    - regexp: "#listen_addresses = 'localhost'"
+      line: "listen_addresses = '*'"
+    - regexp: "#port = 5432"
+      line: "port = {{ sonar_pqsql_allowed_hosts }}"
 
-- name: Remove the test database
-  mysql_db:
-    name: test
-    login_user: root
-    login_password: "{{ mariadb_root_password }}"
-    state: absent
-  tags: mariadb
+- name: restart postgresql-11 
+  service: name=postgresql-11  state=restarted
 
-- name: Create user defined databases
-  mysql_db:
-    name: "{{ sonar_mysql_database }}"
-    login_user: root
-    login_password: "{{ mariadb_root_password }}"
-    state: present
-  register: db_creation
-  tags: mariadb
 
-- name: Remove anonymous users
-  mysql_user:
-    name: ''
-    host_all: true
-    login_user: root
-    login_password: "{{ mariadb_root_password }}"
-    state: absent
-  tags: mariadb
-
-- name: Create a sonar user
-  mysql_user:
-    name: "{{ sonar_mysql_username }}"
-    password: "{{ sonar_mysql_password }}"
-    host: "{{ item }}"
-    priv: '*.*:ALL,GRANT'
-    append_privs: 'yes'
-    login_user: root
-    login_password: "{{ mariadb_root_password }}"
-    state: present
-  with_items: "{{ sonar_mysql_allowed_hosts }}"  
-  tags: mariadb
+- name: Download Sonar.
+  get_url:
+    url: "{{ sonar_download_url }}"
+    dest: "{{ workspace }}/{{ sonar_version_directory }}.zip"
+    validate_certs: "{{ sonar_download_validate_certs }}"
 
 # - name: Download and unarchive a sonarqube
 #   unarchive:
@@ -132,6 +112,8 @@
   unarchive:
     src: "{{ workspace }}/{{ sonar_version_directory }}.zip"
     dest: "{{ download_folder }}"
+    owner: vagrant
+    group: vagrant
     copy: false
     creates: "{{ download_folder }}/sonar/COPYING"
 

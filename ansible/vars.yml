@@ -25,15 +25,16 @@ sonar_version_directory: "sonarqube-{{ sonar_version }}"
 
 sonar_web_context: ''
 
-# MySQL database connection details.
+# pqsql database connection details.
 mariadb_root_password: 'roottoor'
-sonar_mysql_username: 'sonaruser'
-sonar_mysql_password: 'Sonar123456'
-sonar_mysql_database: 'sonarbase'
-sonar_mysql_host: localhost
-sonar_mysql_port: "3306"
-
-sonar_mysql_allowed_hosts:
-  - "127.0.0.1"
-  - "::1"
-  - "localhost"
+sonar_pqsql_username: 'sonaruser'
+sonar_pqsql_password: 'Sonar123456'
+sonar_pqsql_database: 'sonarbase'
+sonar_pqsql_host: localhost
+sonar_pqsql_port: "5432"
+postgresql_version: "11"
+postgresql_cluster_symlink_src: ""
+# sonar_pqsql_allowed_hosts:
+#   - "127.0.0.1"
+#   - "::1"
+#   - "localhost"
