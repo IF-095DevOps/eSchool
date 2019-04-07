@@ -7,6 +7,8 @@
     - import_tasks: /tmp/ansible/amz_coretto.yml
     - import_tasks: /tmp/ansible/maven.yml
     - import_tasks: /tmp/ansible/jenkins.yml
+    - import_tasks: /tmp/ansible/sonarqube.yml
+
 
 - hosts: web
   become: true
