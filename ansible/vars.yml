@@ -11,13 +11,29 @@ maven_path: "{{download_folder}}/apache-maven-3.6.0"
 maven_env_file: /etc/profile.d/maven.sh
 amazon_corretto_jdk_url: https://d1f2yzg3dx5xke.cloudfront.net/java-1.8.0-amazon-corretto-devel-1.8.0_202.b08-1.amzn2.x86_64.rpm
 amazon_corretto_jre_url: https://d1f2yzg3dx5xke.cloudfront.net/java-1.8.0-amazon-corretto-1.8.0_202.b08-1.amzn2.x86_64.rpm
-mariadb_root_password: 'roottoor'
-USERDB: 'sonaruser'
-PASSWDDB: '123456'
-MAINDB: 'sonarbase'
 nodesource_remote: https://rpm.nodesource.com/setup_8.x
 nodesource_local: /tmp/ansible/files/node.sh
-sonarqube_url: https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-7.7.zip
-sonar_username: sonar
-sonar_password: Sonar@1234
-sonar_url: jdbc:mysql://localhost:3306/sonar?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=$
+
+
+workspace: /tmp
+sonar_download_validate_certs: true
+
+# Default release sonarqube.
+sonar_version: 7.7
+sonar_download_url: "https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{ sonar_version }}.zip"
+sonar_version_directory: "sonarqube-{{ sonar_version }}"
+
+sonar_web_context: ''
+
+# MySQL database connection details.
+mariadb_root_password: 'roottoor'
+sonar_mysql_username: 'sonaruser'
+sonar_mysql_password: 'Sonar123456'
+sonar_mysql_database: 'sonarbase'
+sonar_mysql_host: localhost
+sonar_mysql_port: "3306"
+
+sonar_mysql_allowed_hosts:
+  - "127.0.0.1"
+  - "::1"
+  - "localhost"

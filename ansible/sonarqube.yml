@@ -1,31 +1,169 @@
 ---
-- name: Download and unarchive a sonarqube
-  unarchive:
-    src: "{{ sonarqube_url }}"
-    dest: /opt/sonarqube
-    remote_src: yes
+- name: Add official MariaDB repository
+  yum_repository:
+    name: MariaDB
+    description: Official MariaDB repository
+    baseurl: "http://yum.mariadb.org/10.4.3/centos7-amd64/"
+    gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    gpgcheck: true
+  tags: mariadb
 
-- name: change user and password value
-  ini_file: {{ item.name }}
-  with_items: 
-    - name: dest=/opt/sonarqube/conf/sonar.properties section=DEFAULT option=sonar.jdbc.username value=${sonar_username} backup=yes
-    - name: dest=/opt/sonarqube/conf/sonar.properties section=DEFAULT option=sonar.jdbc.password value=${sonar_password} backup=yes
-    - name: dest=/opt/sonarqube/conf/sonar.properties section=DEFAULT option=sonar.jdbc.url value=${sonar_url} backup=yes
-  tags: configuration
+- name: install MariaDB packages
+  yum: pkg={{ item.name }} state=present
+  with_items:
+    - name: MariaDB
+    - name: MariaDB-server
+    - name: MySQL-python
+  tags: mariadb
+
+- name: Start service mariadb, if not started
+  service:
+    name: mariadb       
+    state: started
+    enabled: yes
+
+- name: insert line in file
+  lineinfile:
+    path: /etc/my.cnf.d/server.cnf
+    insertafter: '\[mysqld\]'
+    line: "{{ item }}"
+  loop:
+    - character_set_server = 'utf8mb4'
+    - innodb_file_per_table = 'ON'
+    - innodb_file_format = Barracuda
+    - innodb_file_per_table = 1
+    - collation-server = utf8mb4_unicode_ci
+    - skip-character-set-client-handshake
+- name: restart mariadb
+  service: name=mariadb state=restarted
+
+- name: Replace my.cnf config
+  replace:
+    path: /etc/my.cnf.d/server.cnf
+    regexp: '#bind-address=0.0.0.0'
+    replace: 'bind-address=0.0.0.0'
+
+- name: restart mariadb
+  service: name=mariadb state=restarted
+
+- name: Check if root password is set
+  shell: >
+    mysqladmin -u root status
+  changed_when: false
+  failed_when: false
+  register: root_pwd_check
+  tags: mariadb
+
+- name: Set MariaDB root password for the first time (root@localhost)
+  mysql_user:
+    name: root
+    password: "{{ mariadb_root_password }}"
+    host: localhost
+    state: present
+  when: root_pwd_check.rc == 0
+  tags: mariadb
+
+- name: Set MariaDB root password for 127.0.0.1, ::1
+  mysql_user:
+    name: root
+    password: "{{ mariadb_root_password }}"
+    host: "{{ item }}"
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    state: present
+  with_items:
+    - ::1
+    - 127.0.0.1
+  when: root_pwd_check.rc == 0
+  tags: mariadb
+
+- name: Remove the test database
+  mysql_db:
+    name: test
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    state: absent
+  tags: mariadb
+
+- name: Create user defined databases
+  mysql_db:
+    name: "{{ sonar_mysql_database }}"
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    state: present
+  register: db_creation
+  tags: mariadb
+
+- name: Remove anonymous users
+  mysql_user:
+    name: ''
+    host_all: true
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    state: absent
+  tags: mariadb
+
+- name: Create a sonar user
+  mysql_user:
+    name: "{{ sonar_mysql_username }}"
+    password: "{{ sonar_mysql_password }}"
+    host: "{{ item }}"
+    priv: '*.*:ALL,GRANT'
+    append_privs: 'yes'
+    login_user: root
+    login_password: "{{ mariadb_root_password }}"
+    state: present
+  with_items: "{{ sonar_mysql_allowed_hosts }}"  
+  tags: mariadb
+
+# - name: Download and unarchive a sonarqube
+#   unarchive:
+#     src: "{{ sonar_download_url }}"
+#     dest: "{{ download_folder }}"
+#     remote_src: yes
+
+- name: Download Sonar.
+  get_url:
+    url: "{{ sonar_download_url }}"
+    dest: "{{ workspace }}/{{ sonar_version_directory }}.zip"
+    validate_certs: "{{ sonar_download_validate_certs }}"
+
+- name: Unzip Sonar.
+  unarchive:
+    src: "{{ workspace }}/{{ sonar_version_directory }}.zip"
+    dest: "{{ download_folder }}"
+    copy: false
+    creates: "{{ download_folder }}/sonar/COPYING"
+
+- name: Move Sonar into place.
+  command: >
+    mv {{ download_folder }}/{{ sonar_version_directory }} {{ download_folder }}/sonar
+    creates={{ download_folder }}/sonar/COPYING
+
+- include: sonar_config.yml
 
 - name: Symlink sonar bin.
   file:
-    src: /usr/local/sonar/bin/linux-x86-64/sonar.sh
+    src: "{{ download_folder }}/sonar/bin/linux-x86-64/sonar.sh"
     dest: /usr/bin/sonar
     state: link
   register: sonar_symlink
 
 - name: Add sonar as init script for service management.
   file:
-    src: /usr/local/sonar/bin/linux-x86-64/sonar.sh
+    src: "{{ download_folder }}/sonar/bin/linux-x86-64/sonar.sh"
     dest: /etc/init.d/sonar
     state: link
   when: "ansible_service_mgr != 'systemd'"
+
+- name: Copy SonarQube systemd unit file into place (for systemd systems).
+  template:
+    src: sonar.unit.j2
+    dest: /etc/systemd/system/sonar.service
+    owner: root
+    group: root
+    mode: 0755
+  when: "ansible_service_mgr == 'systemd'"
 
 - name: Ensure Sonar is running and set to start on boot.
   service: name=sonar state=started enabled=yes
@@ -36,6 +174,6 @@
   tags: ['skip_ansible_lint']
 
 - name: Make sure Sonar is responding on the configured port.
-  wait_for: port=9000 delay=3 timeout=300
+  wait_for: port=9001 delay=3 timeout=300
 
 
