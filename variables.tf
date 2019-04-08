@@ -1,8 +1,8 @@
 variable "key" {
-  default = "devops-a162f31edb27.json"
+  default = "devops-eb6d149e8256.json"
 }
 variable "project" {
-  default = "devops-235312"
+  default = "devops-235618"
 }
 variable "region" {
   default = "us-central1"
@@ -51,7 +51,7 @@ variable tier {
 
 variable db_instance_name {
   description = "The name of the master instance"
-  default     = "dbinstancesc03"
+  default     = "dbinstancesc01"
 }
 variable disk_autoresize {
   description = "Second Generation only. Configuration to increase storage size automatically."
@@ -100,4 +100,9 @@ variable user_host {
 variable user_password {
   description = "The password for the default user. If not set, a random one will be generated and available in the generated_user_password output variable."
   default     = "devops095eSchool"
+}
+variable "azs" {
+  description = "Run the GCP Instances in these Availability Zones"
+  type = "list"
+  default = ["us-central1-a", "us-central1-b"]
 }

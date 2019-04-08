@@ -3,7 +3,7 @@ resource "google_compute_forwarding_rule" "default" {
   name                  = "lbb"
   target                = "${google_compute_target_pool.default.self_link}"
   load_balancing_scheme = "EXTERNAL"
-  port_range            = "80"
+  port_range            = "8080"
 }
 
 resource "google_compute_target_pool" "default" {
@@ -15,13 +15,16 @@ resource "google_compute_target_pool" "default" {
   session_affinity = "NONE"
 
   health_checks = [
-    "${google_compute_http_health_check.default.name}",
+    "${google_compute_health_check.default.name}"
   ]
 }
 
-resource "google_compute_http_health_check" "default" {
-  project      = "${var.project}"
-  name         = "hg-hc"
-  request_path = "/"
-  port         = "80"
+resource "google_compute_health_check" "default" {
+  name               = "health-check"
+  timeout_sec        = 1
+  check_interval_sec = 1
+
+  tcp_health_check {
+    port = "8080"
+  }
 }

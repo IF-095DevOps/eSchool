@@ -1,0 +1,19 @@
+---
+- name: Upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+    
+- name: Install corretto
+  yum:
+    name: "{{ amazon_corretto_jre_url }}"
+    state: present
+
+- name: Create application-properties file
+  copy:
+    src: ./files/application.properties
+    dest: /home/centos
+    owner: centos
+    group: centos
+    mode: 0644
+...

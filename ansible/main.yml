@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  become: true
+  vars_files: /tmp/ansible/vars.yml
+  tasks:
+    - import_tasks: /tmp/ansible/maven.yml
+    - import_tasks: /tmp/ansible/jenkins.yml
+
+- hosts: web
+  become: true
+  vars_files: /tmp/ansible/vars.yml
+  tasks:
+    - import_tasks: /tmp/ansible/web.yml
+...
