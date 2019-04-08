@@ -44,6 +44,18 @@
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
+    <hudson.plugins.sonar.SonarRunnerBuilder plugin="sonar@2.8.1">
+      <project></project>
+      <properties>sonar.projectKey=my:project
+sonar.projectName=My project
+sonar.projectVersion=1.0
+sonar.sources=.
+sonar.exclusions=**/*.java</properties>
+      <javaOpts></javaOpts>
+      <additionalArguments></additionalArguments>
+      <jdk>(Inherit From Job)</jdk>
+      <task></task>
+    </hudson.plugins.sonar.SonarRunnerBuilder>
     <hudson.tasks.Maven>
       <targets>clean package</targets>
       <mavenName>Maven_name</mavenName>
