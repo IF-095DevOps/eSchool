@@ -5,3 +5,4 @@
 *.json
 terraform.tfstate.backup
 terraform.tfstate
+terraform.tfstate.lock.info
