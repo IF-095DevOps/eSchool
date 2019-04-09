@@ -5,43 +5,13 @@
     state: present
 
 - name: install PostgreSQL packages
-  yum: pkg={{ item }} state=present
+  package: pkg={{ item }} state=present
   with_items:
     - postgresql11-server
-    - postgresql11-contrib
     - python-psycopg2
+    - postgresql11
+    - unzip
   tags: postgresq
-
-# - name: "Stage 2: stop old postgresql service"
-#   service: name="postgresql-{{ postgresql_version }}" state=stopped
-#   when: postgresql_drop_old_cluster
-
-# - name: "Stage 2: remove old postgresql cluster"
-#   command: "rm -rf /var/lib/pgsql/{{ postgresql_version }}/data {{ postgresql_cluster_symlink_src }}"
-#   when: postgresql_drop_old_cluster
-
-# - name: "Stage 2: cluster directory replacement with symlink, check destination directory"
-#   file:
-#     path: "{{ postgresql_cluster_symlink_src }}"
-#     state: directory
-#     owner: "{{ sonar_pqsql_username }}"
-#     group: "{{ sonar_pqsql_username }}"
-#     mode: 0700
-#   when: postgresql_cluster_symlink_src|length > 0
-  
-# - name: "Stage 2: cluster directory replacement with symlink, create symlink"
-#   file:
-#     src: "{{ postgresql_cluster_symlink_src }}"
-#     dest: "/var/lib/pgsql/{{ postgresql_version }}/data"
-#     state: link
-#     owner: "{{ sonar_pqsql_username }}"
-#     group: "{{ sonar_pqsql_username }}"
-#   when: postgresql_cluster_symlink_src|length > 0
-
-# - name: "Stage 2: initialize new postgresql cluster"
-#   sudo_user: "{{ sonar_pqsql_username }}"
-#   command: "/usr/pgsql-{{ postgresql_version }}/bin/initdb -D /var/lib/pgsql/{{ postgresql_version }}/data"
-
 
 - name: Initiate database
   command: /usr/pgsql-11/bin/postgresql-11-setup initdb
@@ -53,22 +23,23 @@
     enabled: yes
 
 - name: Create PostgreSQL User
+  become_user: postgres
   postgresql_user:
     name: "{{ sonar_pqsql_username }}"
-    encrypted: no
     password: "{{ sonar_pqsql_password }}"
-    role_attr_flags: LOGIN,SUPERUSER
-#  when: postgresql_users|length > 0
+    role_attr_flags: CREATEDB,NOSUPERUSER
 
 - name: Create PostgreSQL DB
+  become_user: postgres
   postgresql_db:
-    name: acme
+    name: "{{ sonar_pqsql_database }}"
     encoding: UTF-8
-    lc_collate: en_US.UTF-8
-    lc_ctype: en_US.UTF-8
+    lc_collate: de_DE.UTF-8
+    lc_ctype: de_DE.UTF-8
     template: template0
 
 - name: Create PostgreSQL DB
+  become_user: postgres
   postgresql_privs:
     db: "{{ sonar_pqsql_database }}"
     privs: ALL
@@ -84,23 +55,28 @@
     - regexp: "#listen_addresses = 'localhost'"
       line: "listen_addresses = '*'"
     - regexp: "#port = 5432"
-      line: "port = {{ sonar_pqsql_allowed_hosts }}"
+      line: "port = {{ sonar_pqsql_port }}"
 
-- name: restart postgresql-11 
-  service: name=postgresql-11  state=restarted
+- name: Start PostgreSQL
+  service:
+    name: postgresql-11
+    state: started
 
+- name: Copy PostgreSQL config
+  template:
+    src: ./templates/pg_hba.conf.j2
+    dest: /var/lib/pgsql/11/data/pg_hba.conf
+
+- name: Restart PostgreSQL
+  service:
+    name: postgresql-11
+    state: restarted
 
 - name: Download Sonar.
   get_url:
     url: "{{ sonar_download_url }}"
     dest: "{{ workspace }}/{{ sonar_version_directory }}.zip"
     validate_certs: "{{ sonar_download_validate_certs }}"
-
-# - name: Download and unarchive a sonarqube
-#   unarchive:
-#     src: "{{ sonar_download_url }}"
-#     dest: "{{ download_folder }}"
-#     remote_src: yes
 
 - name: Download Sonar.
   get_url:
@@ -112,8 +88,8 @@
   unarchive:
     src: "{{ workspace }}/{{ sonar_version_directory }}.zip"
     dest: "{{ download_folder }}"
-    owner: vagrant
-    group: vagrant
+    owner: centos
+    group: centos
     copy: false
     creates: "{{ download_folder }}/sonar/COPYING"
 
@@ -123,6 +99,12 @@
     creates={{ download_folder }}/sonar/COPYING
 
 - include: sonar_config.yml
+
+- name: Sonar run script as centos
+  lineinfile:
+    dest: "{{ download_folder }}/sonar/bin/linux-x86-64/sonar.sh"
+    regexp: "#RUN_AS_USER="
+    line: "RUN_AS_USER=centos"
 
 - name: Symlink sonar bin.
   file:
@@ -140,7 +122,7 @@
 
 - name: Copy SonarQube systemd unit file into place (for systemd systems).
   template:
-    src: sonar.unit.j2
+    src: ./templates/sonar.unit.j2
     dest: /etc/systemd/system/sonar.service
     owner: root
     group: root
@@ -155,7 +137,8 @@
   when: sonar_symlink.changed
   tags: ['skip_ansible_lint']
 
-- name: Make sure Sonar is responding on the configured port.
-  wait_for: port=9001 delay=3 timeout=300
-
-
+- name: Wait for Sonar is respond on the configured port
+  wait_for:
+    host: 127.0.0.1
+    port: 9000
+...

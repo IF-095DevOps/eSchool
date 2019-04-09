@@ -43,5 +43,5 @@
     - { line: 'M2_HOME=/opt/maven' }
     - { line: 'MAVEN_HOME=/opt/maven' }
     - { line: 'PATH=$PATH:$M2_HOME/bin' }
-    
+
 ...
