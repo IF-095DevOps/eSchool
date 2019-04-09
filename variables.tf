@@ -1,8 +1,8 @@
 variable "key" {
-  default = "f:/SSHkey/gcp_devops.json"
+  default = "devops-eb6d149e8256.json"
 }
 variable "project" {
-  default = "lyrical-chassis-232614"
+  default = "devops-235618"
 }
 variable "region" {
   default = "us-central1"

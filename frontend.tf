@@ -45,7 +45,7 @@ resource "google_compute_url_map" "urlmap" {
     
   }
 }
-resource "google_compute_http_health_check" "default1" {
+resource "google_compute_http_health_check" "default" {
   name               = "health-check"
   request_path       = "/"
   check_interval_sec = 1

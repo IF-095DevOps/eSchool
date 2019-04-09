@@ -46,8 +46,8 @@
   <builders>
     <hudson.plugins.sonar.SonarRunnerBuilder plugin="sonar@2.8.1">
       <project></project>
-      <properties>sonar.projectKey=my:project
-sonar.projectName=My project
+      <properties>sonar.projectKey=my:frontend
+sonar.projectName=My frontend
 sonar.projectVersion=1.0
 sonar.sources=.</properties>
       <javaOpts></javaOpts>

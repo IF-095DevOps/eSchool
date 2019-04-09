@@ -132,7 +132,7 @@
     loop_var: plugin_name
   tags: [jenkins]
 
-- name: Copy some part 1 of jenkins config
+- name: Configure jenkins plugins
   copy:
     src: "{{ item }}"
     dest: /var/lib/jenkins
@@ -144,7 +144,7 @@
     - ./files/hudson.plugins.sonar.SonarGlobalConfiguration.xml
     - ./files/hudson.plugins.sonar.SonarRunnerInstallation.xml
     
-- name: Copy some part 1 of jenkins config
+- name: Configure jenkins plugins
   template:
     src: ./templates/hudson.plugins.git.GitTool.xml.j2
     dest: /var/lib/jenkins/hudson.plugins.git.GitTool.xml
