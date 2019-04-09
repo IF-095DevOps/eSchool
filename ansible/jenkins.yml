@@ -132,15 +132,19 @@
     loop_var: plugin_name
   tags: [jenkins]
 
-- name: Copy some part 1 of jenkins config
+- name: Configure jenkins plugins
   copy:
-    src: ./files/jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin.xml
+    src: "{{ item }}"
     dest: /var/lib/jenkins
     owner: jenkins
     group: jenkins
     mode: 0644
-
-- name: Copy some part 1 of jenkins config
+  with_items:
+    - ./files/jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin.xml
+    - ./files/hudson.plugins.sonar.SonarGlobalConfiguration.xml
+    - ./files/hudson.plugins.sonar.SonarRunnerInstallation.xml
+    
+- name: Configure jenkins plugins
   template:
     src: ./templates/hudson.plugins.git.GitTool.xml.j2
     dest: /var/lib/jenkins/hudson.plugins.git.GitTool.xml
@@ -152,6 +156,7 @@
     password: "{{ adminpwd.stdout }}" 
     url: http://localhost:8080
     user: "admin"
+
 
 - name: Download NodeSource repository
   get_url:

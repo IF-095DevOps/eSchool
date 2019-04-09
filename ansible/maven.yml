@@ -12,6 +12,7 @@
       - fontconfig.x86_64
       - python-lxml.x86_64 
       - python-jenkins
+      - unzip
       - "{{ amazon_corretto_jre_url }}"
 
 - name: Install corretto
@@ -43,5 +44,5 @@
     - { line: 'M2_HOME=/opt/maven' }
     - { line: 'MAVEN_HOME=/opt/maven' }
     - { line: 'PATH=$PATH:$M2_HOME/bin' }
-    
+
 ...

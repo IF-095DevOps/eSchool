@@ -33,14 +33,9 @@ resource "google_compute_router_nat" "simple-nat" {
   name                               = "nat-1"
   router                             = "${google_compute_router.router.name}"
   region                             = "${var.region}"
-  #nat_ip_allocate_option             = "AUTO_ONLY"
   nat_ip_allocate_option             = "MANUAL_ONLY"
   nat_ips                            = ["${google_compute_address.address.*.self_link}"]
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
-  # source_subnetwork_ip_ranges_to_nat = "LIST_OF_SUBNETWORKS"
-  # subnetwork {
-  #   name = "${google_compute_subnetwork.private_subnetwork.self_link}"
-  # }
 }
 
 resource "google_compute_firewall" "ssh_firewall" {
@@ -58,13 +53,24 @@ resource "google_compute_firewall" "ssh_firewall" {
   source_ranges = ["0.0.0.0/0"]
   source_tags = ["ssh"]
 }
+resource "google_compute_firewall" "sonar_firewall" {
+  name    = "allow-sonar"
+  network = "${google_compute_network.my_vpc_network.name}"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["9000"]
+  }
+  source_ranges = ["0.0.0.0/0"]
+  source_tags = ["sonar"]
+}
 resource "google_compute_firewall" "web_firewall" {
   name    = "allow-web"
   network = "${google_compute_network.my_vpc_network.name}"
 
   allow {
     protocol = "tcp"
-    ports    = ["8080","80"]
+    ports    = ["8080"]
   }
   source_ranges = ["0.0.0.0/0"]
   source_tags = ["web"]

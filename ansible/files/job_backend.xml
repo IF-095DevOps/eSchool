@@ -44,6 +44,18 @@
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
+    <hudson.plugins.sonar.SonarRunnerBuilder plugin="sonar@2.8.1">
+      <project></project>
+      <properties>sonar.projectKey=my:backend
+sonar.projectName=My backend 
+sonar.projectVersion=1.0
+sonar.sources=.
+sonar.exclusions=**/*.java</properties>
+      <javaOpts></javaOpts>
+      <additionalArguments></additionalArguments>
+      <jdk>(Inherit From Job)</jdk>
+      <task></task>
+    </hudson.plugins.sonar.SonarRunnerBuilder>
     <hudson.tasks.Maven>
       <targets>clean package</targets>
       <mavenName>Maven_name</mavenName>
@@ -77,11 +89,9 @@
 Description=eSchool Java Service
 [Service]
 User=root
-# The configuration file application.properties should be here:
-#change this to your workspace
+# Path to application.properties
 WorkingDirectory=/home/centos/
-#path to executable. 
-#executable is a bash script which calls jar file
+# path to bash script which calls jar file
 ExecStart=/home/centos/eschool
 SuccessExitStatus=143
 TimeoutStopSec=10
@@ -139,11 +149,10 @@ sudo systemctl start eschool</execCommand>
 Description=eSchool Java Service
 [Service]
 User=root
-# The configuration file application.properties should be here:
+# Path to application.properties
 #change this to your workspace
 WorkingDirectory=/home/centos/
-#path to executable. 
-#executable is a bash script which calls jar file
+# path to bash script which calls jar file
 ExecStart=/home/centos/eschool
 SuccessExitStatus=143
 TimeoutStopSec=10

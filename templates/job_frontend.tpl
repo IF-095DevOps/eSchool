@@ -44,6 +44,17 @@
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
+    <hudson.plugins.sonar.SonarRunnerBuilder plugin="sonar@2.8.1">
+      <project></project>
+      <properties>sonar.projectKey=my:frontend
+sonar.projectName=My frontend
+sonar.projectVersion=1.0
+sonar.sources=.</properties>
+      <javaOpts></javaOpts>
+      <additionalArguments></additionalArguments>
+      <jdk>(Inherit From Job)</jdk>
+      <task></task>
+    </hudson.plugins.sonar.SonarRunnerBuilder>
     <hudson.tasks.Shell>
       <command>sed -i -e s+https://fierce-shore-32592.herokuapp.com+http://${lb_backend}:8080+g /var/lib/jenkins/workspace/job_frontend/src/app/services/token-interceptor.service.ts
 yarn install
